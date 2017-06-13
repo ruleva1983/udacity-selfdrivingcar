@@ -1,0 +1,15 @@
+*.pyc
+term1/finding_lanes/CarND-Term1-Starter-Kit-Test/
+*.ipynb_checkpoints/
+*/data/
+*data/
+term1/finding_lanes/CarND-LaneLines-P1/
+*.aux
+*.dvi
+*.log
+*.out
+*.pdf
+*.gz
+report.tex
+*/submission/
+
