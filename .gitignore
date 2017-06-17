@@ -1,3 +1,6 @@
+term1/behavioral_cloning/.idea/
+term1/traffic_sign/.idea/
+term1/behavioral_cloning/linux_sim/
 *.pyc
 term1/finding_lanes/CarND-Term1-Starter-Kit-Test/
 *.ipynb_checkpoints/
@@ -12,4 +15,5 @@ term1/finding_lanes/CarND-LaneLines-P1/
 *.gz
 report.tex
 */submission/
-
+*.yml~
+*.sh~
