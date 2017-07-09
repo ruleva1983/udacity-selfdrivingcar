@@ -2,15 +2,13 @@
 #include "tools.h"
 #include "Eigen/Dense"
 #include <iostream>
+#include <cmath>
 
 using namespace std;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using std::vector;
 
-/*
- * Constructor.
- */
 FusionEKF::FusionEKF() {
   is_initialized_ = false;
 
@@ -40,42 +38,37 @@ FusionEKF::FusionEKF() {
 
 }
 
-/**
-* Destructor.
-*/
 FusionEKF::~FusionEKF() {}
+
+
+void FusionEKF::Initialize(const MeasurementPackage &measurement_pack)
+{
+    is_initialized_ = true;
+    cout << "First measurement" << endl;
+    double x, y;
+    if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
+        double rho = measurement_pack.raw_measurements_[0];
+        double phi = measurement_pack.raw_measurements_[1];
+        x = rho * cos(phi);
+        y = rho * sin(phi);
+    }
+    else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
+        x = measurement_pack.raw_measurements_[0];
+        y = measurement_pack.raw_measurements_[1];
+    }
+    ekf_.x_ = VectorXd(4);
+    ekf_.x_ << x, y, 0, 0;
+}
+
 
 void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
-
-  /*****************************************************************************
-   *  Initialization
-   ****************************************************************************/
   if (!is_initialized_) {
     /**
     TODO:
-      * Initialize the state ekf_.x_ with the first measurement.
       * Create the covariance matrix.
-      * Remember: you'll need to convert radar from polar to cartesian coordinates.
     */
-    // first measurement
-    cout << "EKF: " << endl;
-    ekf_.x_ = VectorXd(4);
-    ekf_.x_ << 1, 1, 1, 1;
-
-    if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
-      /**
-      Convert radar from polar to cartesian coordinates and initialize state.
-      */
-    }
-    else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
-      /**
-      Initialize state.
-      */
-    }
-
-    // done initializing, no need to predict or update
-    is_initialized_ = true;
+    Initialize(measurement_pack);
     return;
   }
 

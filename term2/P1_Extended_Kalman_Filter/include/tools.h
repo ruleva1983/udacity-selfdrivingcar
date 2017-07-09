@@ -2,6 +2,7 @@
 #define TOOLS_H_
 #include <vector>
 #include "Eigen/Dense"
+#include "measurement_package.h"
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -29,6 +30,9 @@ public:
   */
   MatrixXd CalculateJacobian(const VectorXd& x_state);
 
+  
+  void EncodeLine(MeasurementPackage&, vector<VectorXd>&, string& );
+  
 };
 
 #endif /* TOOLS_H_ */
