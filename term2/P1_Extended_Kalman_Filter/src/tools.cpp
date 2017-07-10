@@ -1,6 +1,8 @@
 #include <iostream>
 #include "tools.h"
 #include "measurement_package.h"
+#include <cassert>
+#include <cmath>
 
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
@@ -12,17 +14,24 @@ Tools::~Tools() {}
 
 VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
                               const vector<VectorXd> &ground_truth) {
-    VectorXd RMSE(4);
-    return RMSE;
-}
+    VectorXd rmse(4);
+	rmse << 0,0,0,0;
 
-MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
-  /**
-  TODO:
-    * Calculate a Jacobian here.
-  */
-}
+	assert (estimations.size() == ground_truth.size());
 
+	for(auto i=0; i < estimations.size(); ++i){
+
+		VectorXd residual = estimations[i] - ground_truth[i];
+
+		//coefficient-wise multiplication
+		residual = residual.array()*residual.array();
+		rmse += residual;
+	}
+
+	rmse = rmse/estimations.size();
+	rmse = rmse.array().sqrt();
+	return rmse;
+}
 
 
 void Tools::EncodeLine(MeasurementPackage& meas_package, vector<VectorXd>& ground_truth, string& sensor_measurement){

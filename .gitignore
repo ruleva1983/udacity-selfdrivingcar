@@ -17,3 +17,9 @@ report.tex
 */submission/
 *.yml~
 *.sh~
+*kdev4
+*/.kdev4/
+*udacity*
+*simulator*
+term2/P1_Extended_Kalman_Filter/build/
+*kate-swp
