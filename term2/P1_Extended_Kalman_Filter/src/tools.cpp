@@ -12,15 +12,15 @@ Tools::Tools() {}
 
 Tools::~Tools() {}
 
-VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
-                              const vector<VectorXd> &ground_truth) {
+VectorXd Tools::CalculateRMSE(const vector<VectorXd>& estimations,
+                              const vector<VectorXd>& ground_truth
+                             ) {
     VectorXd rmse(4);
 	rmse << 0,0,0,0;
 
-	assert (estimations.size() == ground_truth.size()
-);
-
-	for(auto i=0; i < estimations.size(); ++i){
+	assert (estimations.size() == ground_truth.size());
+    size_t size = estimations.size();
+	for(auto i=0; i < size; ++i){
 
 		VectorXd residual = estimations[i] - ground_truth[i];
 
@@ -31,9 +31,9 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
 
 	rmse = rmse/estimations.size();
 	rmse = rmse.array().sqrt();
+    
 	return rmse;
 }
-
 
 void Tools::EncodeLine(MeasurementPackage& meas_package, vector<VectorXd>& ground_truth, string& sensor_measurement){
     
@@ -74,7 +74,26 @@ void Tools::EncodeLine(MeasurementPackage& meas_package, vector<VectorXd>& groun
     ground_truth.push_back(gt_values);
 }
 
+bool Tools::sensor_choice(string s)
+{
+    return true;
+}
 
+void Tools::write_output(ofstream& file, const VectorXd& measurements, const VectorXd& ground_truth, const VectorXd& estimation, const VectorXd& RMSE){
+    
+    for(int i=0; i<ground_truth.size(); ++i)
+        file << ground_truth[i] << ",";
+    
+    for(int i=0; i<estimation.size(); ++i)
+        file << estimation[i] << ",";
+    
+    for(int i=0; i<2; ++i)
+        file << measurements[i] << ",";
+    
+    for(int i=0; i<RMSE.size() - 1; ++i)
+        file << RMSE[i] << ",";
+    file << RMSE[3] << std::endl;
+}
 
 
 

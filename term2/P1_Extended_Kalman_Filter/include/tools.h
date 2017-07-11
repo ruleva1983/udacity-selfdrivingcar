@@ -3,10 +3,15 @@
 #include <vector>
 #include "Eigen/Dense"
 #include "measurements.h"
+#include "json.hpp"
+#include "FusionEKF.h"
+#include <string>
+#include <fstream>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using namespace std;
+using json = nlohmann::json;
 
 class Tools {
 public:
@@ -15,10 +20,16 @@ public:
 
   virtual ~Tools();
 
-  VectorXd CalculateRMSE(const vector<VectorXd> &estimations, const vector<VectorXd> &ground_truth);
+  Eigen::VectorXd CalculateRMSE(const std::vector< Eigen::VectorXd >& estimations, const std::vector< Eigen::VectorXd >& ground_truth);
   
   void EncodeLine(MeasurementPackage&, vector<VectorXd>&, string& );
   
+  bool sensor_choice(string);
+  
+  void write_output(ofstream&, const VectorXd&, const VectorXd&, const VectorXd&, const VectorXd&);
+
+  
 };
+
 
 #endif 

@@ -1,10 +1,14 @@
 #include <uWS/uWS.h>
 #include <iostream>
-#include "json.hpp"
 #include <math.h>
+#include <fstream>
+
+#include "json.hpp"
 #include "FusionEKF.h"
 #include "tools.h"
 #include "Eigen/Dense"
+
+std::ofstream output("../data/output.txt"); 
 
 using namespace Eigen;
 using namespace std;
@@ -31,11 +35,8 @@ std::string hasData(std::string s) {
 int main()
 {
   uWS::Hub h;
-
-  // Create a Kalman Filter instance
   SensorFusion fusionEKF;
 
-  // used to compute the RMSE later
   Tools tools;
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
@@ -60,19 +61,26 @@ int main()
           MeasurementPackage meas_package;
           tools.EncodeLine(meas_package, ground_truth, sensor_measurement);
           
-    	  fusionEKF.ProcessMeasurement(meas_package);    	  
-    	  double x = fusionEKF.EKF.x_(0);
-    	  double y = fusionEKF.EKF.x_(1);
-    	  double vx  = fusionEKF.EKF.x_(2);
-    	  double vy = fusionEKF.EKF.x_(3);
-
-          VectorXd estimate(4);
-    	  estimate << x , y , vx, vy;
-    	  estimations.push_back(estimate);
+          double x = 0, y = 0;
+          VectorXd RMSE = VectorXd::Zero(4);
           
-    	  VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
-          cout << "RMSE" << RMSE;
-          
+          //if (meas_package.sensor_type_ == MeasurementPackage::LASER){
+          if (true){
+            fusionEKF.ProcessMeasurement(meas_package);    	  
+            x = fusionEKF.EKF.x_(0);
+            y = fusionEKF.EKF.x_(1);
+            double vx  = fusionEKF.EKF.x_(2);
+            double vy = fusionEKF.EKF.x_(3);
+            VectorXd estimate(4);
+            estimate << x , y , vx, vy;
+            estimations.push_back(estimate);
+            RMSE = tools.CalculateRMSE(estimations, ground_truth);
+            tools.write_output(output, meas_package.raw_measurements_,ground_truth[ground_truth.size()-1], estimate, RMSE);
+          }
+          else{
+            ground_truth.pop_back();
+          }
+              
           json msgJson;
           msgJson["estimate_x"] = x;
           msgJson["estimate_y"] = y;
@@ -82,8 +90,9 @@ int main()
           msgJson["rmse_vy"] = RMSE(3);
           
           auto msg = "42[\"estimate_marker\"," + msgJson.dump() + "]";
-          std::cout << msg << std::endl;
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
+
+
         }
       } else {
         

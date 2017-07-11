@@ -59,7 +59,6 @@ Eigen::VectorXd Radar::residual(const Eigen::VectorXd& z, Eigen::VectorXd& x_) c
     if (c1 > 0.001)
         z_hat << c1, std::atan2(y, x), (x * vx + y * vy) / c1;
     
-    cout << "z_hat " <<  z_hat << endl;
     Eigen::VectorXd res = z - z_hat;
 
     double x_mod = std::fmod(res(1) + M_PI, 2*M_PI);
