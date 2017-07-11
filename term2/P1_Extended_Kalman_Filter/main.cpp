@@ -4,7 +4,9 @@
 #include <math.h>
 #include "FusionEKF.h"
 #include "tools.h"
+#include "Eigen/Dense"
 
+using namespace Eigen;
 using namespace std;
 
 // for convenience
@@ -31,7 +33,7 @@ int main()
   uWS::Hub h;
 
   // Create a Kalman Filter instance
-  FusionEKF fusionEKF;
+  SensorFusion fusionEKF;
 
   // used to compute the RMSE later
   Tools tools;
@@ -59,16 +61,18 @@ int main()
           tools.EncodeLine(meas_package, ground_truth, sensor_measurement);
           
     	  fusionEKF.ProcessMeasurement(meas_package);    	  
-    	  double x = fusionEKF.ekf_.x_(0);
-    	  double y = fusionEKF.ekf_.x_(1);
-    	  double vx  = fusionEKF.ekf_.x_(2);
-    	  double vy = fusionEKF.ekf_.x_(3);
+    	  double x = fusionEKF.EKF.x_(0);
+    	  double y = fusionEKF.EKF.x_(1);
+    	  double vx  = fusionEKF.EKF.x_(2);
+    	  double vy = fusionEKF.EKF.x_(3);
 
           VectorXd estimate(4);
     	  estimate << x , y , vx, vy;
     	  estimations.push_back(estimate);
           
     	  VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
+          cout << "RMSE" << RMSE;
+          
           json msgJson;
           msgJson["estimate_x"] = x;
           msgJson["estimate_y"] = y;

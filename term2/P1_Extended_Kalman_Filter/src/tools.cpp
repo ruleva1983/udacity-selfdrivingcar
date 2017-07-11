@@ -1,6 +1,6 @@
 #include <iostream>
 #include "tools.h"
-#include "measurement_package.h"
+#include "measurements.h"
 #include <cassert>
 #include <cmath>
 
@@ -17,7 +17,8 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
     VectorXd rmse(4);
 	rmse << 0,0,0,0;
 
-	assert (estimations.size() == ground_truth.size());
+	assert (estimations.size() == ground_truth.size()
+);
 
 	for(auto i=0; i < estimations.size(); ++i){
 
@@ -72,6 +73,7 @@ void Tools::EncodeLine(MeasurementPackage& meas_package, vector<VectorXd>& groun
     gt_values(3) = vy_gt;
     ground_truth.push_back(gt_values);
 }
+
 
 
 

@@ -1,9 +1,9 @@
-#ifndef KALMAN_FILTER_H_
-#define KALMAN_FILTER_H_
+#ifndef EXTENDED_KALMAN_FILTER_H_
+#define EXTENDED_KALMAN_FILTER_H_
 #include "Eigen/Dense"
-#include "motion.h"
-#include "lidar.h"
-#include "radar.h"
+#include "dynamics.h"
+#include "measurements.h"
+
 
 class KalmanFilter {
 public:
@@ -21,9 +21,15 @@ public:
   void Predict(const Eigen::MatrixXd&, const Eigen::MatrixXd&);
   
   void Update(const Eigen::VectorXd&, const Eigen::MatrixXd&, const Eigen::MatrixXd&);
+  
+  template<typename M>
+  void Update2(const Eigen::VectorXd& z, M& measurement);
 
+  void UpdateLidar(const Eigen::VectorXd&, Lidar&);
+  void UpdateRadar(const Eigen::VectorXd& , Radar&);
 
 
 };
 
 #endif /* KALMAN_FILTER_H_ */
+

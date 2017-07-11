@@ -1,39 +1,34 @@
 #ifndef FusionEKF_H_
 #define FusionEKF_H_
 
-#include "measurement_package.h"
 #include "Eigen/Dense"
 #include <vector>
 #include <string>
 #include <fstream>
-#include "kalman_filter.h"
-#include "tools.h"
-#include "motion.h"
-#include "lidar.h"
-#include "radar.h"
+#include "measurements.h"
+#include "dynamics.h"
+#include "extended_kalman_filter.h"
 
-class FusionEKF {
+
+class SensorFusion {
 public:
 
-  FusionEKF();
+  SensorFusion();
 
-  virtual ~FusionEKF();
+  virtual ~SensorFusion();
 
+  void Initialize(const MeasurementPackage &measurement_pack);
+  
   void ProcessMeasurement(const MeasurementPackage &measurement_pack);
-
-  KalmanFilter ekf_;
-
+  
+  KalmanFilter EKF;
 private:
-    
-  void Initialize(const MeasurementPackage &measurement_pack);    
-
   bool is_initialized_;
   long long previous_timestamp_;
-  Tools tools;
-  //Lidar lidar;
-  //Radar radar;
-  Motion motion;
-
+  DynamicalModel dynamics;
+  Lidar lidar_model;
+  Radar radar_model;
+  
 };
 
 #endif /* FusionEKF_H_ */

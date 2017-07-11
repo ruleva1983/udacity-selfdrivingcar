@@ -8,12 +8,11 @@ set(CXX_FLAGS "-Wall")
 set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
 set(sources main.cpp 
-    src/tools.cpp 
     src/FusionEKF.cpp 
-    src/kalman_filter.cpp
-    src/motion.cpp
-    src/lidar.cpp
-    src/radar.cpp)
+    src/extended_kalman_filter.cpp
+    src/measurements.cpp 
+    src/dynamics.cpp 
+    src/tools.cpp)
 
 include_directories(third-party)
 include_directories(include)
