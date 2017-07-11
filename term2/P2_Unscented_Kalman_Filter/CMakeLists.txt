@@ -1,4 +1,4 @@
-project(ExtendedKF)
+project(UnscentedKF)
 
 cmake_minimum_required (VERSION 3.5)
 
@@ -8,15 +8,12 @@ set(CXX_FLAGS "-Wall")
 set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
 set(sources main.cpp 
-    src/FusionEKF.cpp 
-    src/extended_kalman_filter.cpp
-    src/measurements.cpp 
-    src/dynamics.cpp 
-    src/tools.cpp)
+    src/dynamics.cpp
+    src/sigmapoints.cpp)
 
 include_directories(third-party)
 include_directories(include)
 
-add_executable(ExtendedKF ${sources})
+add_executable(UnscentedKF ${sources})
 
-target_link_libraries(ExtendedKF z ssl uv uWS)
+target_link_libraries(UnscentedKF z ssl uv uWS)
