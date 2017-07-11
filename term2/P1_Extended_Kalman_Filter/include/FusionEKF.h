@@ -22,12 +22,14 @@ public:
   void ProcessMeasurement(const MeasurementPackage &measurement_pack);
   
   KalmanFilter EKF;
+  
 private:
   bool is_initialized_;
   long long previous_timestamp_;
   DynamicalModel dynamics;
   Lidar lidar_model;
   Radar radar_model;
+  
   
 };
 

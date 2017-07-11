@@ -58,11 +58,10 @@ void SensorFusion::ProcessMeasurement(const MeasurementPackage &measurement_pack
   
   VectorXd z = measurement_pack.raw_measurements_;
 
-    //TODO Debug from here
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
-      EKF.UpdateRadar(z, radar_model);
+      EKF.Update<Radar>(z, radar_model);
   } else {
-      EKF.UpdateLidar(z, lidar_model);
+      EKF.Update<Lidar>(z, lidar_model);
   }
 
 }

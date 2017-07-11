@@ -4,11 +4,11 @@
 #include "dynamics.h"
 #include "measurements.h"
 
+using namespace Eigen;
 
 class KalmanFilter {
 public:
 
-  // state
   Eigen::VectorXd x_;
   Eigen::MatrixXd P_;
 
@@ -20,16 +20,28 @@ public:
   
   void Predict(const Eigen::MatrixXd&, const Eigen::MatrixXd&);
   
-  void Update(const Eigen::VectorXd&, const Eigen::MatrixXd&, const Eigen::MatrixXd&);
-  
   template<typename M>
-  void Update2(const Eigen::VectorXd& z, M& measurement);
-
-  void UpdateLidar(const Eigen::VectorXd&, Lidar&);
-  void UpdateRadar(const Eigen::VectorXd& , Radar&);
+  void Update(const Eigen::VectorXd& z, M& measurement);
 
 
 };
 
-#endif /* KALMAN_FILTER_H_ */
+template<typename M>
+void KalmanFilter::Update(const VectorXd &z, M& measurement) {
+    
+    MatrixXd R = measurement.getR();
+    MatrixXd H = measurement.getH(x_);
+    VectorXd y = measurement.residual(z, x_);
+    
+    MatrixXd Ht = H.transpose();
+    MatrixXd S = H * P_ * Ht + R;
+    MatrixXd K = P_ * Ht * S.inverse();
+    
+    x_ = x_ + (K * y);
+	MatrixXd I = MatrixXd::Identity(x_.size(), x_.size());
+	P_ = (I - K * H) * P_;
+}
+
+
+#endif
 

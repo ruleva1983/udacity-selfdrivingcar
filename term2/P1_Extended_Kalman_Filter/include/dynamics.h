@@ -15,7 +15,6 @@ public:
 private:
     double noise_ax = 9.0;
     double noise_ay = 9.0;
-    
 };
 
 
