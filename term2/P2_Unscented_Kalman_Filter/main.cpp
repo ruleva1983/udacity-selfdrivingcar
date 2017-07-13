@@ -4,8 +4,11 @@
 #include <fstream>
 
 #include "json.hpp"
-#include "FusionEKF.h"
+#include "fusion.h"
 #include "tools.h"
+#include "dynamics.h"
+#include "filter.h"
+
 #include "Eigen/Dense"
 
 std::ofstream output("../data/output.txt"); 
@@ -35,13 +38,13 @@ std::string hasData(std::string s) {
 int main()
 {
   uWS::Hub h;
-  SensorFusion fusionEKF;
+  SensorFusion<UFK, CTRV> fusion;
 
   Tools tools;
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
 
-  h.onMessage([&fusionEKF,&tools,&estimations,&ground_truth](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+  h.onMessage([&fusion,&tools,&estimations,&ground_truth](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
@@ -60,22 +63,24 @@ int main()
           string sensor_measurement = j[1]["sensor_measurement"];
           MeasurementPackage meas_package;
           tools.EncodeLine(meas_package, ground_truth, sensor_measurement);
-          
+          cout << sensor_measurement << endl << endl;
           double x = 0, y = 0;
           VectorXd RMSE = VectorXd::Zero(4);
           
           //if (meas_package.sensor_type_ == MeasurementPackage::LASER){
           if (true){
-            fusionEKF.ProcessMeasurement(meas_package);    	  
-            x = fusionEKF.EKF.x_(0);
-            y = fusionEKF.EKF.x_(1);
-            double vx  = fusionEKF.EKF.x_(2);
-            double vy = fusionEKF.EKF.x_(3);
+            fusion.ProcessMeasurement(meas_package);    	  
+            
+            x = fusion.X_(0);
+            y = fusion.X_(1);
+            double vx  = fusion.X_(2)*std::cos(fusion.X_(3));
+            double vy = fusion.X_(2)*std::sin(fusion.X_(3));
             VectorXd estimate(4);
             estimate << x , y , vx, vy;
             estimations.push_back(estimate);
             RMSE = tools.CalculateRMSE(estimations, ground_truth);
             tools.write_output(output, meas_package.raw_measurements_,ground_truth[ground_truth.size()-1], estimate, RMSE);
+            
           }
           else{
             ground_truth.pop_back();

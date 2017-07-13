@@ -1,10 +1,18 @@
 #include <cassert>
 
 #include "dynamics.h"
+#include <iostream>
+
+using namespace std;
+
 
 DynamicalModel::DynamicalModel(){}
 DynamicalModel::~DynamicalModel(){}
-Eigen::MatrixXd DynamicalModel::getNoise() const{};
+Eigen::MatrixXd DynamicalModel::getNoise() const{}
+void DynamicalModel::augmentState(Eigen::VectorXd&, Eigen::MatrixXd&) const {}
+Eigen::VectorXd DynamicalModel::transform(Eigen::VectorXd&, double) const
+{}
+
 
 CTRV::CTRV(){}
 CTRV::~CTRV(){}
@@ -17,7 +25,7 @@ Eigen::VectorXd CTRV::transform(Eigen::VectorXd& Input_State, double dt) const
     double x = Input_State(0), y = Input_State(1);
     double v = Input_State(2);
     double psi = Input_State(3), psid = Input_State(4);
-    double nu_a = Input_State(5) , nu_psidd = Input_State(6); 
+    double nu_a = Input_State(5), nu_psidd = Input_State(6);
     
     double xp, yp;
     
@@ -33,7 +41,7 @@ Eigen::VectorXd CTRV::transform(Eigen::VectorXd& Input_State, double dt) const
     double vp = v;
     double psip = psi + psid*dt;
     double psidp = psid;
-
+    
     xp += 0.5*nu_a*dt*dt * cos(psi);
     yp += 0.5*nu_a*dt*dt * sin(psi);
     vp += nu_a*dt;
@@ -43,6 +51,7 @@ Eigen::VectorXd CTRV::transform(Eigen::VectorXd& Input_State, double dt) const
 
     Eigen::VectorXd Output_State(5);
     Output_State << xp, yp, vp, psip, psidp;
+
     return Output_State;
 }
 
@@ -52,4 +61,20 @@ Eigen::MatrixXd CTRV::getNoise() const
     NoiseMatrix << noise_a, 0.0,
                    0.0,     noise_psi;
     return NoiseMatrix;
+}
+
+void CTRV::augmentState(Eigen::VectorXd& X_, Eigen::MatrixXd& P_) const
+{
+    int nb_aug = X_.size() + 2;
+    
+    Eigen::VectorXd X_augmented = Eigen::VectorXd::Zero(nb_aug);
+    for (int i = 0 ; i < X_.size() ; ++i)
+        X_augmented[i] = X_[i];
+    
+    Eigen::MatrixXd P_augmented = Eigen::MatrixXd::Zero(nb_aug,nb_aug);
+    P_augmented.block(0,0,5,5) = P_;
+    P_augmented.block(5,5,2,2) = getNoise();
+    
+    X_ = X_augmented;
+    P_ = P_augmented;
 }

@@ -9,8 +9,12 @@ public:
     DynamicalModel();
     virtual ~DynamicalModel();
     
-    virtual Eigen::VectorXd transform(Eigen::VectorXd& ) const = 0;
+    virtual Eigen::VectorXd transform(Eigen::VectorXd& , double) const = 0;
     virtual Eigen::MatrixXd getNoise() const = 0;
+    
+    virtual void augmentState(Eigen::VectorXd&, Eigen::MatrixXd&) const = 0;
+    
+    
 
 };
 
@@ -23,10 +27,14 @@ public:
     
     Eigen::VectorXd transform(Eigen::VectorXd& , double) const;
     Eigen::MatrixXd getNoise() const;
+    void augmentState(Eigen::VectorXd&, Eigen::MatrixXd&) const;
+    
+    
+    
+    int nb_state_variables = 5;
     
 private:
-    int nb_state_variables = 5;
-    double noise_a = 1.0, noise_psi = 1.0;
+    double noise_a = 0.2, noise_psi = 0.02;
 };
 
 #endif

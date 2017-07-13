@@ -1,8 +1,12 @@
-#ifndef DYNAMICS_H_
-#define DYNAMICS_H_
+#ifndef SIGMAPOINTS_H_
+#define SIGMAPOINTS_H_
 
 #include <vector>
 #include "Eigen/Dense"
+
+#include <iostream>
+
+using namespace std;
 
 class PointGenerator{
 public:
@@ -11,24 +15,30 @@ public:
     
     void generate(Eigen::VectorXd&, Eigen::MatrixXd&);
     
-    
-    
-    
     template <typename T>
-    std::vector<Eigen::VectorXd> transform(T&) const;
+    void transform(T&, double);
+    
+    void evalState(Eigen::VectorXd&, Eigen::MatrixXd&);
+    
+    Eigen::MatrixXd Points;
+    Eigen::MatrixXd Points_pred;
+    Eigen::MatrixXd Points_meas;
     
 private:
-    std::vector<Eigen::VectorXd> Points;
     int nb_points;
-    double lambda;
+    double lambda = -4.0;
 };
 
+
+
 template <typename T>
-std::vector<Eigen::VectorXd> PointGenerator::transform(T& DynamicalModel) const{
-    std::vector<Eigen::VectorXd> Transformed_Points(0);
-    for (int i = 0 ; i < nb_points ; ++i)
-        Transformed_Points.push_back(DynamicalModel.transform(Points[i]));
-    return Transformed_Points;
+void PointGenerator::transform(T& Model, double dt){
+    Eigen::MatrixXd Transformed_Points(5, nb_points);
+    for (int i = 0 ; i < nb_points ; ++i){
+        Eigen::VectorXd Point = Points.col(i);
+        Transformed_Points.col(i) = Model.transform(Point, dt);
+    }
+    Points_pred = Transformed_Points;
 }
 
 
