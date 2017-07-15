@@ -53,8 +53,9 @@ void UFK::apply_kalman(Eigen::VectorXd& z_meas, Eigen::VectorXd& X_pred, Eigen::
                 while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
                 while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
             }
-        X_ = X_ + K * z_diff;
-        P_ = P_ - K*P_meas*K.transpose();
+        X_ = X_pred + K * z_diff;
+        P_ = P_pred - K*P_meas*K.transpose();
+    
         
 }
 

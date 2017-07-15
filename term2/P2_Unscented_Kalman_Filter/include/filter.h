@@ -48,11 +48,18 @@ void UFK::update(MeasurementType& measDevice, Eigen::VectorXd& X_, Eigen::Matrix
     cout << "Passing sigma Points through measurement..." << endl;
     Generator.Points_meas = measDevice.transform(sigmaPoints);
     
+    //Until here it works (checked only for radar)
+    
+    //Check again the next 2 steps, somehow a slightlly different result appears between
+    // this code and the web udacity simulator (maybe rounding error)
+    // Otherwise seems to work
+    
     cout << "Evaluate state after measurement..." << endl;
     measDevice.evalState(Generator.Points_meas, X_, P_);
     
     cout << "Adding measurement noise..." << endl;
     measDevice.AddNoise(P_);
+    
 }
 
 template <typename DynamicalType>
@@ -63,13 +70,14 @@ void UFK::predict(Eigen::VectorXd& X_, Eigen::MatrixXd& P_, DynamicalType dynami
     
     cout << "Generating Sigma Points..." << endl;
     Generator.generate(X_, P_);
-
+    
     cout << "Propagating Sigma Points..." << endl;
 
     Generator.transform<DynamicalType>(dynamicalSystem, dt);
     
     cout << "Updating State Mean and Covariance..." << endl;
     Generator.evalState(X_, P_);
+    
 }
 
 

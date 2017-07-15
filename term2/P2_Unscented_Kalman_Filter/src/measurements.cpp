@@ -24,17 +24,27 @@ void measurement::evalState(Eigen::MatrixXd& SigmaPoints, Eigen::VectorXd& X_, E
 
     double lambda = -4.0;
     double w0 = lambda/(lambda + 7);
-    double wi = (1.0/(2.0*(lambda + 7)));
+    double wi = 0.5/(lambda + 7);
     
     X_acc += w0*SigmaPoints.col(0);
     
     for (int i = 1 ; i < SigmaPoints.cols() ; ++i)
         X_acc += wi*SigmaPoints.col(i);
     
-    P_acc += w0 * (SigmaPoints.col(0) - X_acc)*(SigmaPoints.col(0) - X_acc).transpose();
-    
-    for (int i = 1 ; i < SigmaPoints.cols() ; ++i)
-        P_acc += wi * (SigmaPoints.col(i) - X_acc)*(SigmaPoints.col(i) - X_acc).transpose();
+    Eigen::VectorXd z_diff = SigmaPoints.col(0) - X_acc;
+    if (nb_dof==3){
+        while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
+        while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
+    }
+    P_acc += w0 * z_diff*z_diff.transpose();
+    for (int i = 1 ; i < SigmaPoints.cols() ; ++i){
+        z_diff = SigmaPoints.col(i) - X_acc;
+        if (nb_dof==3){
+        while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
+        while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
+        }
+        P_acc += wi * z_diff*z_diff.transpose();
+    }
 
     X_ = X_acc;
     P_ = P_acc;

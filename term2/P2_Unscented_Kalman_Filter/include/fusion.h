@@ -54,17 +54,12 @@ SensorFusion<FilterType, DynamicsType>::~SensorFusion() {}
 template <class FilterType, class DynamicsType>
 void SensorFusion<FilterType, DynamicsType>::Initialize(const MeasurementPackage &measurement_pack)
 {
-    //cout << "State initialized with first measurement from device " << measurement_pack.sensor_type_ << endl; 
-    //cout << "Measurement values: " << measurement_pack.raw_measurements_ << endl;
     is_initialized_ = true;
     previous_timestamp_ = measurement_pack.timestamp_;
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR)
         radar_model.initialize(measurement_pack.raw_measurements_, X_, P_);
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER)
         lidar_model.initialize(measurement_pack.raw_measurements_, X_, P_);
-    
-    //cout << "Initial State Mean:  " << X_ << endl;
-    //cout << "Initial State Covariance: " << P_ << endl;
 }
 
 
@@ -72,7 +67,7 @@ template <class FilterType, class DynamicsType>
 void SensorFusion<FilterType, DynamicsType>::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   if (!is_initialized_) {
-    cout << "Initialization phase " << endl;  
+    cout << "State initialization based on the first measurement..." << endl;  
     Initialize(measurement_pack);
     return;
   }
@@ -87,6 +82,8 @@ void SensorFusion<FilterType, DynamicsType>::ProcessMeasurement(const Measuremen
   P_pred = P_;
   filter.predict(X_pred, P_pred, dynamicaModel, dt);
   
+  //Until here it works
+  
   cout << "Update phase..."  << endl << endl;
   
   X_meas = X_pred;
@@ -95,6 +92,8 @@ void SensorFusion<FilterType, DynamicsType>::ProcessMeasurement(const Measuremen
       filter.template update<Radar>(radar_model, X_meas, P_meas);
   else
       filter.template update<Lidar>(lidar_model, X_meas , P_meas);
+  
+  
   
   Eigen::VectorXd z_meas = measurement_pack.raw_measurements_;
   filter.apply_kalman(z_meas, X_pred, P_pred, X_meas, P_meas, X_, P_);
