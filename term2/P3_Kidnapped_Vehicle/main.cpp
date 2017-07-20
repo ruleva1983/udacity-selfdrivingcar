@@ -73,6 +73,7 @@ int main()
 			double sense_theta = std::stod(j[1]["sense_theta"].get<std::string>());
 
 			pf.init(sense_x, sense_y, sense_theta, sigma_pos);
+            
 		  }
 		  else {
 			// Predict the vehicle's next state from previous (noiseless control) data.
@@ -102,6 +103,8 @@ int main()
         	std::istream_iterator<float>(),
         	std::back_inserter(y_sense));
 
+            //std::cout << x_sense.size()  << "  " << y_sense.size() << endl;;
+            
         	for(int i = 0; i < x_sense.size(); i++)
         	{
         		LandmarkObs obs;
@@ -127,8 +130,8 @@ int main()
 			}
 			weight_sum += particles[i].weight;
 		  }
-		  cout << "highest w " << highest_weight << endl;
-		  cout << "average w " << weight_sum/num_particles << endl;
+		  //cout << "highest w " << highest_weight << endl;
+		  //cout << "average w " << weight_sum/num_particles << endl;
 
           json msgJson;
           msgJson["best_particle_x"] = best_particle.x;
