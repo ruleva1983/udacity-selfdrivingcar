@@ -1,5 +1,6 @@
 #include <cassert>
 
+#include "constants.h"
 #include "dynamics.h"
 #include <iostream>
 
@@ -17,10 +18,10 @@ Eigen::VectorXd DynamicalModel::transform(Eigen::VectorXd&, double) const
 CTRV::CTRV(){}
 CTRV::~CTRV(){}
 
-// Takes as a input an augmented state and propagates it in time according to the model and the noise
+
 Eigen::VectorXd CTRV::transform(Eigen::VectorXd& Input_State, double dt) const
 {
-    assert (Input_State.size() == 7);
+    assert (Input_State.size() == nb_state_variables + nb_noise_comp);
     
     double x = Input_State(0), y = Input_State(1);
     double v = Input_State(2);
@@ -49,7 +50,7 @@ Eigen::VectorXd CTRV::transform(Eigen::VectorXd& Input_State, double dt) const
     psip += 0.5*nu_psidd*dt*dt;
     psidp += nu_psidd*dt;
 
-    Eigen::VectorXd Output_State(5);
+    Eigen::VectorXd Output_State(nb_state_variables);
     Output_State << xp, yp, vp, psip, psidp;
 
     return Output_State;
@@ -57,7 +58,7 @@ Eigen::VectorXd CTRV::transform(Eigen::VectorXd& Input_State, double dt) const
 
 Eigen::MatrixXd CTRV::getNoise() const
 {
-    Eigen::MatrixXd NoiseMatrix(2,2);
+    Eigen::MatrixXd NoiseMatrix(nb_noise_comp, nb_noise_comp);
     NoiseMatrix << noise_a, 0.0,
                    0.0,     noise_psi;
     return NoiseMatrix;
@@ -65,15 +66,15 @@ Eigen::MatrixXd CTRV::getNoise() const
 
 void CTRV::augmentState(Eigen::VectorXd& X_, Eigen::MatrixXd& P_) const
 {
-    int nb_aug = X_.size() + 2;
+    int nb_aug = X_.size() + nb_noise_comp;  
     
     Eigen::VectorXd X_augmented = Eigen::VectorXd::Zero(nb_aug);
     for (int i = 0 ; i < X_.size() ; ++i)
         X_augmented[i] = X_[i];
     
     Eigen::MatrixXd P_augmented = Eigen::MatrixXd::Zero(nb_aug,nb_aug);
-    P_augmented.block(0,0,5,5) = P_;
-    P_augmented.block(5,5,2,2) = getNoise();
+    P_augmented.block(0, 0, nb_state_variables ,nb_state_variables) = P_;  
+    P_augmented.block(nb_state_variables, nb_state_variables, nb_noise_comp, nb_noise_comp) = getNoise();
     
     X_ = X_augmented;
     P_ = P_augmented;

@@ -3,20 +3,14 @@
 
 #include "sigmapoints.h"
 #include "Eigen/Dense"
-
 #include <iostream>
 
 using namespace std;
-
-
 
 class BayesianFilter{
 public:
     BayesianFilter();
     virtual ~BayesianFilter();
-    
-    //virtual void predict(Eigen::VectorXd&, Eigen::MatrixXd&)  const = 0;
-    
 };
 
 
@@ -40,7 +34,6 @@ private:
 };
 
 
-
 template <typename MeasurementType>
 void UFK::update(MeasurementType& measDevice, Eigen::VectorXd& X_, Eigen::MatrixXd& P_)
 {
@@ -48,19 +41,14 @@ void UFK::update(MeasurementType& measDevice, Eigen::VectorXd& X_, Eigen::Matrix
     cout << "Passing sigma Points through measurement..." << endl;
     Generator.Points_meas = measDevice.transform(sigmaPoints);
     
-    //Until here it works (checked only for radar)
-    
-    //Check again the next 2 steps, somehow a slightlly different result appears between
-    // this code and the web udacity simulator (maybe rounding error)
-    // Otherwise seems to work
-    
-    cout << "Evaluate state after measurement..." << endl;
-    measDevice.evalState(Generator.Points_meas, X_, P_);
+    cout << "Evaluate state after measurement..." << endl;    
+    measDevice.evalState(Generator, X_, P_);
     
     cout << "Adding measurement noise..." << endl;
     measDevice.AddNoise(P_);
     
 }
+
 
 template <typename DynamicalType>
 void UFK::predict(Eigen::VectorXd& X_, Eigen::MatrixXd& P_, DynamicalType dynamicalSystem, double dt)
@@ -77,7 +65,6 @@ void UFK::predict(Eigen::VectorXd& X_, Eigen::MatrixXd& P_, DynamicalType dynami
     
     cout << "Updating State Mean and Covariance..." << endl;
     Generator.evalState(X_, P_);
-    
 }
 
 

@@ -11,7 +11,7 @@
 
 #include "Eigen/Dense"
 
-std::ofstream output("../data/output.txt"); 
+std::ofstream output("../data/output_radar.txt"); 
 
 using namespace Eigen;
 using namespace std;
@@ -64,22 +64,23 @@ int main()
           MeasurementPackage meas_package;
           tools.EncodeLine(meas_package, ground_truth, sensor_measurement);
           cout << sensor_measurement << endl << endl;
-          double x = 0, y = 0;
+          double x = 0, y = 0, epsilon;
           VectorXd RMSE = VectorXd::Zero(4);
           
-          //if (meas_package.sensor_type_ == MeasurementPackage::LASER){
-          if (true){
+          if (meas_package.sensor_type_ == MeasurementPackage::RADAR){
+          //if (true){
             fusion.ProcessMeasurement(meas_package);    	  
             
             x = fusion.X_(0);
             y = fusion.X_(1);
+            epsilon = fusion.epsilon;
             double vx  = fusion.X_(2)*std::cos(fusion.X_(3));
             double vy = fusion.X_(2)*std::sin(fusion.X_(3));
             VectorXd estimate(4);
             estimate << x , y , vx, vy;
             estimations.push_back(estimate);
             RMSE = tools.CalculateRMSE(estimations, ground_truth);
-            tools.write_output(output, meas_package.raw_measurements_,ground_truth[ground_truth.size()-1], estimate, RMSE);
+            tools.write_output(output, meas_package.raw_measurements_,ground_truth[ground_truth.size()-1], estimate, RMSE, epsilon);
             
           }
           else{

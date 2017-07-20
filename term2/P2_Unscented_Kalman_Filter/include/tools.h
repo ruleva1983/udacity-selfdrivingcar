@@ -4,14 +4,10 @@
 #include <vector>
 #include "Eigen/Dense"
 #include "measurements.h"
-#include "json.hpp"
 #include <string>
 #include <fstream>
 
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
 using namespace std;
-using json = nlohmann::json;
 
 class Tools {
 public:
@@ -22,11 +18,12 @@ public:
 
   Eigen::VectorXd CalculateRMSE(const std::vector< Eigen::VectorXd >& estimations, const std::vector< Eigen::VectorXd >& ground_truth);
   
-  void EncodeLine(MeasurementPackage&, vector<VectorXd>&, string& );
+  void EncodeLine(MeasurementPackage&, vector<Eigen::VectorXd>&, string& );
   
-  void write_output(ofstream&, const VectorXd&, const VectorXd&, const VectorXd&, const VectorXd&);
+  void write_output(ofstream&, const Eigen::VectorXd&, const Eigen::VectorXd&, const Eigen::VectorXd&, const Eigen::VectorXd&, double);
+  
+  static double NIS(Eigen::VectorXd& , Eigen::VectorXd& , Eigen::MatrixXd&);
 
-  
 };
 
 

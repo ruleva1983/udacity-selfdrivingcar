@@ -76,7 +76,7 @@ void Tools::EncodeLine(MeasurementPackage& meas_package, vector<VectorXd>& groun
 }
 
 
-void Tools::write_output(ofstream& file, const VectorXd& measurements, const VectorXd& ground_truth, const VectorXd& estimation, const VectorXd& RMSE){
+void Tools::write_output(ofstream& file, const VectorXd& measurements, const VectorXd& ground_truth, const VectorXd& estimation, const VectorXd& RMSE, double epsilon){
     
     for(int i=0; i<ground_truth.size(); ++i)
         file << ground_truth[i] << ",";
@@ -87,13 +87,24 @@ void Tools::write_output(ofstream& file, const VectorXd& measurements, const Vec
     for(int i=0; i<2; ++i)
         file << measurements[i] << ",";
     
-    for(int i=0; i<RMSE.size() - 1; ++i)
+    for(int i=0; i<RMSE.size(); ++i)
         file << RMSE[i] << ",";
-    file << RMSE[3] << std::endl;
+    file << epsilon << std::endl;
 }
 
 
+double Tools::NIS(Eigen::VectorXd& z_meas, Eigen::VectorXd& X_meas , Eigen::MatrixXd& P_meas){
+    Eigen::VectorXd residual = z_meas - X_meas;
+    double epsilon = residual.transpose()*P_meas.inverse()*residual;
+    
+    // We normalize in respect to the degrees of freedom
+    if (z_meas.size() == 2)
+        epsilon /= 5.991;
+    else if (z_meas.size() == 3)
+        epsilon /= 7.815;
 
+    return epsilon;
+}
 
 
 

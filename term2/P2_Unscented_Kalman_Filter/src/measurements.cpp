@@ -1,5 +1,6 @@
 #include "measurements.h"
 #include "Eigen/Dense"
+#include "constants.h"
 
 #include <iostream>
 #include <cmath>
@@ -13,43 +14,31 @@ measurement::measurement(){}
 measurement::~measurement(){}
 void measurement::initialize(const Eigen::VectorXd&, Eigen::VectorXd&, Eigen::MatrixXd&) const {};
 
-
-
-void measurement::evalState(Eigen::MatrixXd& SigmaPoints, Eigen::VectorXd& X_, Eigen::MatrixXd& P_) const
+void measurement::evalState(PointGenerator& Gen_SigmaPoints, Eigen::VectorXd& X_, Eigen::MatrixXd& P_) const
 {
-    int nb_dof = SigmaPoints.rows();
+    int nb_dof = Gen_SigmaPoints.Points_meas.rows();
     
     Eigen::VectorXd X_acc = Eigen::VectorXd::Zero(nb_dof);
     Eigen::MatrixXd P_acc = Eigen::MatrixXd::Zero(nb_dof, nb_dof);
+    Eigen::MatrixXd SigmaPoints = Gen_SigmaPoints.Points_meas;
+    Eigen::VectorXd weights = Gen_SigmaPoints.weights;
+    
+    for (int i = 0 ; i < SigmaPoints.cols() ; ++i)
+        X_acc += weights(i)*SigmaPoints.col(i);
 
-    double lambda = -4.0;
-    double w0 = lambda/(lambda + 7);
-    double wi = 0.5/(lambda + 7);
-    
-    X_acc += w0*SigmaPoints.col(0);
-    
-    for (int i = 1 ; i < SigmaPoints.cols() ; ++i)
-        X_acc += wi*SigmaPoints.col(i);
-    
-    Eigen::VectorXd z_diff = SigmaPoints.col(0) - X_acc;
-    if (nb_dof==3){
-        while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
-        while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
-    }
-    P_acc += w0 * z_diff*z_diff.transpose();
-    for (int i = 1 ; i < SigmaPoints.cols() ; ++i){
-        z_diff = SigmaPoints.col(i) - X_acc;
+    for (int i = 0 ; i < SigmaPoints.cols() ; ++i){
+        Eigen::VectorXd z_diff = SigmaPoints.col(i) - X_acc;
         if (nb_dof==3){
         while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
         while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
         }
-        P_acc += wi * z_diff*z_diff.transpose();
+        P_acc += weights(i) * z_diff*z_diff.transpose();
     }
-
+    
     X_ = X_acc;
     P_ = P_acc;
-    
 }
+
 
 
 //Lidar
@@ -100,7 +89,6 @@ Radar::Radar() {
     X_initialize = Eigen::VectorXd::Zero(5);
     P_initialize = Eigen::MatrixXd::Zero(5,5);
     
-    //TODO Different initialization for Radar than for lidar
     for (int i = 0 ; i < 5 ; ++i)
         P_initialize(i,i) = 1.0;
 }
@@ -122,7 +110,7 @@ void Radar::initialize(const Eigen::VectorXd& measurements, Eigen::VectorXd& X_,
 
 Eigen::MatrixXd Radar::transform(Eigen::MatrixXd& Points) const
 {
-    
+    cout << "Radar measurement..." << endl;
     int nb_points = Points.cols();
     Eigen::MatrixXd TrasformedPoints = Eigen::MatrixXd::Zero(nb_meas, nb_points);
     

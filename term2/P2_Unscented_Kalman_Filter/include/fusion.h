@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include "tools.h"
+#include "constants.h"
 #include "measurements.h"
 #include "Eigen/Dense"
 
@@ -26,26 +28,31 @@ public:
   Eigen::VectorXd X_;
   Eigen::MatrixXd P_;
   
-  Eigen::VectorXd X_pred;
-  Eigen::MatrixXd P_pred;
+  Eigen::VectorXd X_pred; 
+  Eigen::MatrixXd P_pred; 
   
   Eigen::VectorXd X_meas;
   Eigen::MatrixXd P_meas;
   
+  double epsilon;
+  
 private:
   bool is_initialized_;
   long long previous_timestamp_;
-  double time_normalizer = 1000000.0;
   
   Lidar lidar_model;
   Radar radar_model;
+  
+  std::vector<double> NIS_constistence;
   
   
 };
 
 
 template <class FilterType, class DynamicsType>
-SensorFusion<FilterType, DynamicsType>::SensorFusion() : is_initialized_(false) {}
+SensorFusion<FilterType, DynamicsType>::SensorFusion() : is_initialized_(false) {
+    NIS_constistence = std::vector<double> (0);
+}
 
 template <class FilterType, class DynamicsType>
 SensorFusion<FilterType, DynamicsType>::~SensorFusion() {}
@@ -82,7 +89,6 @@ void SensorFusion<FilterType, DynamicsType>::ProcessMeasurement(const Measuremen
   P_pred = P_;
   filter.predict(X_pred, P_pred, dynamicaModel, dt);
   
-  //Until here it works
   
   cout << "Update phase..."  << endl << endl;
   
@@ -97,7 +103,9 @@ void SensorFusion<FilterType, DynamicsType>::ProcessMeasurement(const Measuremen
   
   Eigen::VectorXd z_meas = measurement_pack.raw_measurements_;
   filter.apply_kalman(z_meas, X_pred, P_pred, X_meas, P_meas, X_, P_);
-
   
+  epsilon = Tools::NIS(z_meas, X_meas, P_meas);
+  NIS_constistence.push_back(epsilon);
+
 }
 #endif

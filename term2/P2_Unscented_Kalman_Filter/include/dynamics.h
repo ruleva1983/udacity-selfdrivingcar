@@ -13,8 +13,6 @@ public:
     virtual Eigen::MatrixXd getNoise() const = 0;
     
     virtual void augmentState(Eigen::VectorXd&, Eigen::MatrixXd&) const = 0;
-    
-    
 
 };
 
@@ -29,12 +27,11 @@ public:
     Eigen::MatrixXd getNoise() const;
     void augmentState(Eigen::VectorXd&, Eigen::MatrixXd&) const;
     
-    
-    
-    int nb_state_variables = 5;
+    int nb_state_variables = 5; 
     
 private:
-    double noise_a = 0.2, noise_psi = 0.02;
+    int nb_noise_comp = 2;
+    
 };
 
 #endif
