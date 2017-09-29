@@ -62,12 +62,6 @@ int main() {
             Vehicles vehicles (sensor_fusion_data);
             
             Behavior new_behavior = behavior_planner.eval_behavior(map, sensor_fusion_data, car);
-            
-            
-            
-            //cout << j[1]["sensor_fusion"] << endl;
-            
-            //cout << new_behavior.busy << "  " << new_behavior.next_lane << "  " << new_behavior.target_speed << endl;
 
             
             

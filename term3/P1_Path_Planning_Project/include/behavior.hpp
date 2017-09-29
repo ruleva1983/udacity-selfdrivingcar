@@ -10,6 +10,7 @@
 #include "utils.hpp"
 
 
+// TODO Change this constants to capital letters
 const double max_speed = 50.0;
 const double DistanceRadius = 50.0;
 const double coeff_speed = 0.7;
@@ -81,27 +82,18 @@ Behavior BehaviorPlanner::eval_behavior(const Map& map, const Vehicles& vehicles
     int new_lane, current_lane = map.current_lane(car.get_state().d);
     vector<int> available_lanes = get_available_lanes(current_lane);
     
-    cout <<  "Current lane: " << current_lane << endl;
-    for (auto l : available_lanes)
-        cout << "Available lane: " << l << endl;
-    
     double lowest_cost = std::numeric_limits<double>::max();
     
     for (auto l : available_lanes){
         double lane_cost = eval_lane_cost(l, map, vehicles, car);
-        cout << "Cost for lane " << l << " = " << lane_cost << endl; 
         if (lane_cost < lowest_cost){
             lowest_cost = lane_cost;
             new_lane = l;
         }
     }
-    
-    cout << "Lane chosen: " << new_lane << endl;
-    
+ 
     double target_speed = eval_target_speed(new_lane, map, vehicles, car);
-    
-    cout << "Target Speed in the chosen lane: " <<  target_speed << endl;
-    
+ 
     bool change_lane;
     if (new_lane == current_lane)
         change_lane = false;
@@ -122,47 +114,41 @@ double BehaviorPlanner::eval_lane_cost(int lane, const Map& map, const Vehicles&
     double min_speed = utils::mph_to_ms(max_speed);
     for (auto vehicle : lane_vehicles){
         
-        double speed = utils::ms_to_mph(vehicle.speed());
-        
-        cout << "Lane: " << lane << " Id: " << vehicle.id << " speed: " << speed << endl;
-        
+        double speed = vehicle.speed();
         if (speed < min_speed){
             min_speed = speed;
         }
     }
-    double v_cost = 1 - min_speed/max_speed;
+    double v_cost = 1 - min_speed/utils::mph_to_ms(max_speed);
     
     // Distance related cost
-    double min_distance = DistanceRadius;
+    double min_abs_distance = DistanceRadius;
     for (auto vehicle : lane_vehicles){
         double distance = map.distance(car.get_state().s, vehicle.s);
-        if (distance < 0 && distance < min_distance){
-            min_distance = distance;
+        if (distance < 0 && abs(distance) < min_abs_distance){
+            min_abs_distance = abs(distance);
         }
     }
-    double d_cost = 1 - min_distance/DistanceRadius;
-    
+    double d_cost = 1 - min_abs_distance/DistanceRadius;
     // Non lane change preferred cost
     
     double c_cost = abs(map.current_lane(car.get_state().d) - lane);
     
     double total_cost = coeff_speed*v_cost + coeff_change*c_cost + coeff_distance*d_cost;
     
-    // Check for possible collisions in lane change
+    //TODO Check for possible collisions in lane change
     
     return total_cost;
 }
 
-double BehaviorPlanner::eval_target_speed(int lane, const Map& map, const Vehicles& vehicles,
-                                          Agent& car)
+double BehaviorPlanner::eval_target_speed(int lane, const Map& map, const Vehicles& vehicles, Agent& car)
 {
     VehicleData V = vehicles.closest_vehicle_front(lane, map, car);
     if (V.id == -1)
-        return max_speed;
+        return utils::mph_to_ms(max_speed);
     else
-        return utils::ms_to_mph(V.speed());
+        return V.speed();
 }
-
 
 
 vector<int> BehaviorPlanner::get_available_lanes(int current_lane){
