@@ -1,3 +1,5 @@
+*.bbl
+*.blg
 term1/behavioral_cloning/.idea/
 term1/traffic_sign/.idea/
 term1/behavioral_cloning/linux_sim/
@@ -23,3 +25,5 @@ report.tex
 *simulator*
 term2/P1_Extended_Kalman_Filter/build/
 *kate-swp
+*build*
+*submission*

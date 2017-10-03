@@ -12,7 +12,7 @@
 #include "sensor_fusion.hpp"
 #include "agent.hpp"
 #include "behavior.hpp"
-//#include "trajectory.hpp"
+#include "trajectory.hpp"
 
 
 
@@ -41,8 +41,10 @@ int main() {
   Map map(map_file_);
   Agent car;
   BehaviorPlanner behavior_planner;
+  Generator generator;
+  
 
-  h.onMessage([&map, &car , &behavior_planner](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
+  h.onMessage([&map, &car , &behavior_planner, &generator](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
    
     if (length && length > 2 && data[0] == '4' && data[1] == '2') {
@@ -59,35 +61,21 @@ int main() {
             car.set_state(j[1]["x"] ,j[1]["y"] ,j[1]["s"] ,j[1]["d"] ,j[1]["speed"] ,j[1]["yaw"]);
             
           	vector<vector<double> >  sensor_fusion_data = j[1]["sensor_fusion"];
+            
             Vehicles vehicles (sensor_fusion_data);
             
             Behavior new_behavior = behavior_planner.eval_behavior(map, sensor_fusion_data, car);
 
-            
-            
-            
-            
-          	// Previous path data given to the Planner
-          	auto previous_path_x = j[1]["previous_path_x"];
-          	auto previous_path_y = j[1]["previous_path_y"];
-          	// Previous path's end s and d values 
-          	double end_path_s = j[1]["end_path_s"];
-          	double end_path_d = j[1]["end_path_d"];
-
-          	
-            
-
-          	
-
-          	
-
-
-      
-
-          	// TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
-            json msgJson;
             vector<double> next_x_vals;
           	vector<double> next_y_vals;
+            vector<double> previous_x = j[1]["previous_path_x"];
+           	vector<double> previous_y = j[1]["previous_path_y"];
+            
+
+            generator.generate_trajectory(new_behavior, car, map, previous_x,
+                                          previous_y ,next_x_vals, next_y_vals);
+            
+            json msgJson;
             msgJson["next_x"] = next_x_vals;
           	msgJson["next_y"] = next_y_vals;
 

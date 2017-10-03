@@ -45,7 +45,7 @@ public:
     /// \param s the s component of the Frenet coordinate
     /// \param d the d component of the Frenet coordinate
     /// \return the (x,y) map coordinates, as a pair
-    std::pair<double, double> frenet_to_xy(double s, double d);
+    std::pair<double, double> frenet_to_xy(double s, double d) const;
     
     /// \brief Given the d Frenet coordinate indentifies in which lane the vehicle is currently residing.
     /// \param d the d Frenet coordinate
@@ -126,7 +126,7 @@ void Map::eval_spline(){
         spline_dy_.set_points(raw_points.s, raw_points.d_y);
     }
 
-std::pair<double, double> Map::frenet_to_xy(double s, double d){
+std::pair<double, double> Map::frenet_to_xy(double s, double d) const{
         double x = spline_x_(s) + d*spline_dx_(s);
         double y = spline_y_(s) + d*spline_dy_(s);
         return std::make_pair(x, y);

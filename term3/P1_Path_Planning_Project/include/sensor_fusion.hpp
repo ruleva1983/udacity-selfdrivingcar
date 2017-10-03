@@ -6,6 +6,9 @@
 #include "agent.hpp"
 //#include "behavior.hpp"
 
+const double DistanceRadius2 = 35.0;
+
+
 using namespace std;
 
 
@@ -79,7 +82,7 @@ VehicleData::VehicleData(const std::vector<double>& raw_data):
 
 
 double VehicleData::speed(){
-    return sqrt(vx*vx + vy*vy);
+    return sqrt(vx*vx + vy*vy); //[m/s]
 }
 
         
@@ -105,7 +108,7 @@ VehicleData Vehicles::closest_vehicle_front(int lane, const Map& map, Agent& car
     
     VehicleData vv;
     //TODO Substitute to 50 DistanceRadius
-    double min_distance = 50;
+    double min_distance = DistanceRadius2;
     for (auto v : V){
         double distance = map.distance(car.get_state().s, v.s);
         if (distance < 0 && abs(distance) < min_distance){

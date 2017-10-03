@@ -96,7 +96,7 @@ namespace unittest{
         double speed1 = planner.eval_target_speed(1, map, vehicles, car);
         
         ASSERT_EQ(speed0, 15);
-        ASSERT_EQ(speed1, utils::mph_to_ms(max_speed));
+        ASSERT_EQ(speed1, utils::mph_to_ms(MAX_SPEED));
 
     }
     
@@ -121,7 +121,7 @@ namespace unittest{
         
         ASSERT_EQ(new_behavior.change_lane, true);
         ASSERT_EQ(new_behavior.next_lane, 0);
-        ASSERT_NEAR(new_behavior.target_speed, utils::mph_to_ms(max_speed), 0.0001);
+        ASSERT_NEAR(new_behavior.target_speed, utils::mph_to_ms(MAX_SPEED), 0.0001);
     }
     
     TEST(ToolsTest, BehaviorPlanner_eval_behavior2)
@@ -142,7 +142,7 @@ namespace unittest{
         
         ASSERT_EQ(new_behavior.change_lane, false);
         ASSERT_EQ(new_behavior.next_lane, 0);
-        ASSERT_NEAR(new_behavior.target_speed, utils::mph_to_ms(max_speed), 0.0001);
+        ASSERT_NEAR(new_behavior.target_speed, utils::mph_to_ms(MAX_SPEED), 0.0001);
     }
     
     

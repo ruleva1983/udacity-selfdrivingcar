@@ -10,12 +10,15 @@
 #include "utils.hpp"
 
 
-// TODO Change this constants to capital letters
-const double max_speed = 50.0;
-const double DistanceRadius = 50.0;
-const double coeff_speed = 0.7;
-const double coeff_distance = 0.25;
-const double coeff_change = 1 - coeff_speed - coeff_distance;
+const double MAX_SPEED = 45.0; //[mph]
+const double DISTANCE_RADIUS = 25.0; //[m]
+const double SPEED_DISTANCE_RADIUS = 40.0; //[m]
+const double COLLISION_RADIUS = 5.0; //[m]
+const double COEFF_V = 0.55;
+const double COEFF_D = 0.4;
+const double COEFF_C = 1 - COEFF_D - COEFF_V;
+const double MAX_ACC = 9.7; //[ms^(-2)]
+const double CHANGE_LANE_LIMIT = 0.05; //[m]
 
 struct Behavior{
     Behavior(bool b, int lane, float speed);
@@ -27,7 +30,7 @@ struct Behavior{
 class BehaviorPlanner
 {
 public:
-    /// \brief Default Constructor.
+    /// \brief Default Constructor. Initializes members to default values 
     BehaviorPlanner();
     
     /// \brief Evaluates the best behavior given the map, vehicles and agent information as input.
@@ -72,13 +75,19 @@ Behavior::Behavior(bool b, int lane, float speed) : change_lane(b), next_lane(la
 }
 
 
-
-BehaviorPlanner::BehaviorPlanner() : previous_behavior(false, -1, max_speed)
+BehaviorPlanner::BehaviorPlanner() : previous_behavior(false, -1, utils::mph_to_ms(MAX_SPEED))
 {
 }
 
 Behavior BehaviorPlanner::eval_behavior(const Map& map, const Vehicles& vehicles, Agent& car)
 {
+    
+    // If the vehicle is currently undergoing a lane change, do not change behavior until lane change is complete
+    if (previous_behavior.change_lane){
+        if (car.get_state().d - (previous_behavior.next_lane + 0.5)*LaneWidth > CHANGE_LANE_LIMIT)
+            return previous_behavior;
+    }
+
     int new_lane, current_lane = map.current_lane(car.get_state().d);
     vector<int> available_lanes = get_available_lanes(current_lane);
     
@@ -105,39 +114,39 @@ Behavior BehaviorPlanner::eval_behavior(const Map& map, const Vehicles& vehicles
     return b;
 }
 
-
 double BehaviorPlanner::eval_lane_cost(int lane, const Map& map, const Vehicles& vehicles, Agent& car)
 {
     vector<VehicleData> lane_vehicles = vehicles.veh_on_lane(lane, map);
     
     // Speed related cost
-    double min_speed = utils::mph_to_ms(max_speed);
+    double min_speed = utils::mph_to_ms(MAX_SPEED);
     for (auto vehicle : lane_vehicles){
-        
+        double distance = map.distance(car.get_state().s, vehicle.s);
         double speed = vehicle.speed();
-        if (speed < min_speed){
+        if (speed < min_speed && distance < 0 && abs(distance) < SPEED_DISTANCE_RADIUS){
             min_speed = speed;
         }
     }
-    double v_cost = 1 - min_speed/utils::mph_to_ms(max_speed);
+    double v_cost = 1 - min_speed/utils::mph_to_ms(MAX_SPEED);
     
-    // Distance related cost
-    double min_abs_distance = DistanceRadius;
+    double min_abs_distance = DISTANCE_RADIUS;
     for (auto vehicle : lane_vehicles){
         double distance = map.distance(car.get_state().s, vehicle.s);
+        
+        // AVOIDING COLLISION
+        if ( abs(distance) < COLLISION_RADIUS){
+            return 1.0;
+        }
         if (distance < 0 && abs(distance) < min_abs_distance){
             min_abs_distance = abs(distance);
         }
     }
-    double d_cost = 1 - min_abs_distance/DistanceRadius;
-    // Non lane change preferred cost
+    double d_cost = 1 - min_abs_distance/DISTANCE_RADIUS;
     
+    // Non lane change preferred cost
     double c_cost = abs(map.current_lane(car.get_state().d) - lane);
     
-    double total_cost = coeff_speed*v_cost + coeff_change*c_cost + coeff_distance*d_cost;
-    
-    //TODO Check for possible collisions in lane change
-    
+    double total_cost = COEFF_V*v_cost + COEFF_C*c_cost + COEFF_D*d_cost;
     return total_cost;
 }
 
@@ -145,11 +154,10 @@ double BehaviorPlanner::eval_target_speed(int lane, const Map& map, const Vehicl
 {
     VehicleData V = vehicles.closest_vehicle_front(lane, map, car);
     if (V.id == -1)
-        return utils::mph_to_ms(max_speed);
+        return utils::mph_to_ms(MAX_SPEED);
     else
         return V.speed();
 }
-
 
 vector<int> BehaviorPlanner::get_available_lanes(int current_lane){
     if (current_lane == 1)
